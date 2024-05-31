@@ -1,0 +1,9 @@
+[build]
+target = "thumbv7em-none-eabihf"  
+
+[target.thumbv7em-none-eabihf]
+rustflags = ["-C", "link-arg=-Tmemory.x"]
+runner = "arm-none-eabi-gdb -x openocd.gdb"
+
+[target.'cfg(target_os = "macos")']
+rustflags = ["-C", "link-args=-e __start -static -nostartfiles"]
