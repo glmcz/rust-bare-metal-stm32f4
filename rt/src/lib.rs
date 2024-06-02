@@ -1,23 +1,31 @@
 #![no_std]
-#![no_main]
 
 use core::panic::PanicInfo;
 
+#[macro_export]
+macro_rules! entry {
+    ($path:path) => {
+        #[export_name = "main"]
+        pub unsafe fn __main() -> ! {
+            let f: fn() -> ! = $path;
+
+            f()
+        }
+    }
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn Reset() -> ! { //The exact location of the reset handler itself, Reset, is not important. 
-    let _x = 42;
-    loop {}
+    extern "Rust" {
+        fn main() -> !;
+    }
+    main()
 }
 
 #[link_section = ".vector_table.reset_vector"]
 #[no_mangle]
 pub static RESET_VECTOR: unsafe extern "C" fn() -> ! = Reset;
 
-
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
-    loop {}
-}
 
 #[panic_handler]
 fn panic(_info: &core::panic::PanicInfo) -> ! {
