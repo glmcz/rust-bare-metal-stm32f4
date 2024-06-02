@@ -2,18 +2,6 @@
 
 use core::panic::PanicInfo;
 
-#[macro_export]
-macro_rules! entry {
-    ($path:path) => {
-        #[export_name = "main"]
-        pub unsafe fn __main() -> ! {
-            let f: fn() -> ! = $path;
-
-            f()
-        }
-    }
-}
-
 #[no_mangle]
 pub unsafe extern "C" fn Reset() -> ! { //The exact location of the reset handler itself, Reset, is not important. 
     extern "Rust" {
@@ -21,6 +9,20 @@ pub unsafe extern "C" fn Reset() -> ! { //The exact location of the reset handle
     }
     main()
 }
+
+#[macro_export]
+macro_rules! entry {
+    ($path:path) => {
+        #[export_name = "main"]
+        pub unsafe fn __main() -> ! {
+            // type check the given path
+            let f: fn() -> ! = $path;
+
+            f()
+        }
+    }
+}
+
 
 #[link_section = ".vector_table.reset_vector"]
 #[no_mangle]
