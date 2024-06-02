@@ -1,12 +1,31 @@
 #![no_std]
 
 use core::panic::PanicInfo;
+use core::ptr;
 
 #[no_mangle]
 pub unsafe extern "C" fn Reset() -> ! { //The exact location of the reset handler itself, Reset, is not important. 
+    extern "C" {
+       static mut _sbss: u8;
+       static mut _ebss: u8;
+
+       static mut _sdata: u8;
+       static mut _edata: u8;
+       static _sidate: u8;
+    }
+
+    // init static memory correctly, so we do not withness undefined behaviour of
+    // static variables
+    let count = &_ebss as *const u8 as usize - &_sbss as *const u8 as usize;
+    ptr::write_bytes(&mut _sbss as *mut u8, 0, count);
+
+    let count = &_edata as *const u8 as usize - &_sdata as *const u8 as usize;
+    ptr::copy_nonoverlapping(&_sidata as *const u8, &mut _sdata as *mut u8, count);
+
     extern "Rust" {
         fn main() -> !;
     }
+
     main()
 }
 
