@@ -3,6 +3,15 @@
 use core::panic::PanicInfo;
 use core::ptr;
 
+#[panic_handler]
+fn panic(_info: &core::panic::PanicInfo) -> ! {
+    loop {}
+}
+
+#[no_mangle]
+pub extern "C" fn DefaultExceptionHandler() {
+} 
+
 #[no_mangle]
 pub unsafe extern "C" fn Reset() -> ! { //The exact location of the reset handler itself, Reset, is not important. 
     extern "C" {
@@ -11,7 +20,7 @@ pub unsafe extern "C" fn Reset() -> ! { //The exact location of the reset handle
 
        static mut _sdata: u8;
        static mut _edata: u8;
-       static _sidate: u8;
+       static _sidata: u8;
     }
 
     // init static memory correctly, so we do not withness undefined behaviour of
@@ -48,7 +57,39 @@ macro_rules! entry {
 pub static RESET_VECTOR: unsafe extern "C" fn() -> ! = Reset;
 
 
-#[panic_handler]
-fn panic(_info: &core::panic::PanicInfo) -> ! {
-    loop {}
+pub union Vector {
+    reserved: u32,
+    handler: unsafe extern "C" fn(),
 }
+
+extern "C" {
+    fn NMI();
+    fn HardFault();
+    fn MemManage();
+    fn BusFault();
+    fn UsageFault();
+    fn SVCall();
+    fn PendSV();
+    fn SysTick();
+}
+
+#[link_section = ".vector_table.exceptions"]
+#[no_mangle]
+pub static EXCEPTIONS: [Vector; 14] = [
+    Vector { handler: NMI },
+    Vector { handler: HardFault },
+    Vector { handler: MemManage },
+    Vector { handler: BusFault },
+    Vector {
+        handler: UsageFault,
+    },
+    Vector { reserved: 0 },
+    Vector { reserved: 0 },
+    Vector { reserved: 0 },
+    Vector { reserved: 0 },
+    Vector { handler: SVCall },
+    Vector { reserved: 0 },
+    Vector { reserved: 0 },
+    Vector { handler: PendSV },
+    Vector { handler: SysTick },
+];

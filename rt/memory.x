@@ -5,6 +5,10 @@ MEMORY
     CCRAM : ORIGIN = 0x10000000, LENGTH = 64K
 }
 
+
+/* Advanced users can place the stack inthe CCRAM */
+/* which is smaller but faster. */
+/* _stack_start = ORIGIN(CCRAM) + LENGTH(CCRAM); */
 /* _stack_start = ORIGIN(RAM) + LENGTH(RAM); */
 
 /* The entry point is the reset handler */
@@ -21,6 +25,9 @@ SECTIONS
 
     /* Second entry: reset vector */
     KEEP(*(.vector_table.reset_vector));
+
+   /* 14 entries in exception vector */
+    KEEP(*(.vector_table.exceptions)); 
   } > FLASH
 
   .text :
@@ -54,10 +61,16 @@ SECTIONS
     *(.ARM.exidx .ARM.exidx.*);
   }
 }
+/* Provide takes an effect only if left sign are undefined after inspectinng all input object files */
+PROVIDE(NMI = DefaultExceptionHandler);
+PROVIDE(HardFault = DefaultExceptionHandler);
+PROVIDE(MemManage = DefaultExceptionHandler);
+PROVIDE(BusFault = DefaultExceptionHandler);
+PROVIDE(UsageFault = DefaultExceptionHandler);
+PROVIDE(SVCall = DefaultExceptionHandler);
+PROVIDE(PendSV = DefaultExceptionHandler);
+PROVIDE(SysTick = DefaultExceptionHandler);
 
-/* Advanced users can place the stack inthe CCRAM */
-/* which is smaller but faster. */
-/* _stack_start = ORIGIN(CCRAM) + LENGTH(CCRAM); */
 
 /*
 ### start code address for I/D Code bus  0x0000 0000
