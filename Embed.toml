@@ -1,0 +1,6 @@
+[default.rtt]
+enabled = true
+
+[default.general]
+chip = "stm32f407VGTx"
+log_level = "WARN"

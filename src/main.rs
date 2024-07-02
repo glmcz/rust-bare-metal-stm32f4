@@ -1,25 +1,16 @@
-#![no_std]
 #![no_main]
+#![no_std]
 
-use core::panic::PanicInfo;
+use cortex_m_rt::entry;
+use panic_halt as _;
+use cortex_m::asm;
 
-#[no_mangle]
-pub unsafe extern "C" fn Reset() -> ! { //The exact location of the reset handler itself, Reset, is not important. 
-    let _x = 42;
-    loop {}
-}
-
-#[link_section = ".vector_table.reset_vector"]
-#[no_mangle]
-pub static RESET_VECTOR: unsafe extern "C" fn() -> ! = Reset;
-
-
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
-    loop {}
-}
-
-#[panic_handler]
-fn panic(_info: &core::panic::PanicInfo) -> ! {
-    loop {}
+use rtt_target::{rtt_init_print, rprint};
+#[entry]
+fn main() -> ! {
+    rtt_init_print!();
+    rprint!("Hello world");
+    loop {
+        asm::nop();
+    }
 }
